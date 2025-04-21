@@ -10,11 +10,24 @@ BRAND_PROMPTS = {
     "ourLittleJoys": "You are the designer at ourLittleJoys. Think playful, modern, and supportive. Focus on wellness routines for children and parents. Suggest gentle UX with guided interactions."
 }
 
+# ---- Load Personas from GitHub ----
+def load_personas(brand):
+    if brand == "ManMatters":
+        try:
+            url = "https://raw.githubusercontent.com/suchitpoojari/design-ai-agent/main/brand_data/ManMatters/personas.txt"
+            response = requests.get(url)
+            if response.status_code == 200:
+                return response.text.strip()
+        except:
+            pass
+    return ""
+
 # ---- UI ----
 st.title("DesignAI: Workflow Generator")
 st.markdown("Give me a brand and a design problem — I'll suggest flows and UX directions.")
 
 brand = st.selectbox("Select Brand", list(BRAND_PROMPTS.keys()))
+personas = load_personas(brand)
 problem = st.text_area("Describe the design problem", placeholder="e.g. Users are dropping off at checkout on mobile")
 
 if st.button("Generate Suggestions"):
@@ -27,21 +40,25 @@ if st.button("Generate Suggestions"):
                 "Content-Type": "application/json"
             }
 
+            system_prompt = BRAND_PROMPTS[brand] + "\n\n" + personas
+
             payload = {
                 "model": "deepseek-chat",
                 "messages": [
-                    {"role": "system", "content": BRAND_PROMPTS[brand]},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": problem}
                 ],
                 "temperature": 0.6,
                 "max_tokens": 700
             }
 
-            response = requests.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=payload)
-
-            if response.status_code == 200:
-                suggestion = response.json()["choices"][0]["message"]["content"].strip()
-                st.markdown("### ✨ Suggested Design Workflows")
-                st.write(suggestion)
-            else:
-                st.error(f"API call failed: {response.status_code} - {response.text}")
+            try:
+                response = requests.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=payload)
+                if response.status_code == 200:
+                    suggestion = response.json()["choices"][0]["message"]["content"].strip()
+                    st.markdown("### ✨ Suggested Design Workflows")
+                    st.write(suggestion)
+                else:
+                    st.error(f"API call failed: {response.status_code} - {response.text}")
+            except Exception as e:
+                st.error(f"Unexpected error: {e}")
