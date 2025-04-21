@@ -43,7 +43,7 @@ if st.button("Generate Suggestions"):
             system_prompt = BRAND_PROMPTS[brand] + "\n\n" + personas
 
             payload = {
-                "model": "deepseek-chat",
+                "model": "deepseek-reasoner",
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": problem}
