@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # ---- CONFIG ----
-DEEPSEEK_API_KEY = st.secrets["sk-3d2c9be49bc24ab2af28c0675b9cb72a"]  # Add your DeepSeek API key in .streamlit/secrets.toml
+DEEPSEEK_API_KEY = st.secrets["DEEPSEEK_API_KEY"]  # Add your DeepSeek API key in .streamlit/secrets.toml
 
 BRAND_PROMPTS = {
     "ManMatters": "You are a senior product designer at ManMatters. Use practical UX language. Suggest design workflows, key components, and layout improvements. Prioritize men's wellness across mobile and web.",
