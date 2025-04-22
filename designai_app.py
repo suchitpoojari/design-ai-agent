@@ -1,8 +1,9 @@
 import streamlit as st
+import openai
 import requests
 
 # ---- CONFIG ----
-DEEPSEEK_API_KEY = st.secrets["DEEPSEEK_API_KEY"]  # Add your DeepSeek API key in .streamlit/secrets.toml
+openai.api_key = st.secrets["OPENAI_API_KEY"]  # Add your OpenAI API key in .streamlit/secrets.toml
 
 BRAND_PROMPTS = {
     "ManMatters": "You are a senior product designer at ManMatters. Use practical UX language. Suggest design workflows, key components, and layout improvements. Prioritize men's wellness across mobile and web.",
@@ -35,30 +36,20 @@ if st.button("Generate Suggestions"):
         st.warning("Please enter a problem statement.")
     else:
         with st.spinner("Thinking like a product designer..."):
-            headers = {
-                "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-                "Content-Type": "application/json"
-            }
-
             system_prompt = BRAND_PROMPTS[brand] + "\n\n" + personas
 
-            payload = {
-                "model": "deepseek-reasoner",
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": problem}
-                ],
-                "temperature": 0.6,
-                "max_tokens": 700
-            }
-
             try:
-                response = requests.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=payload)
-                if response.status_code == 200:
-                    suggestion = response.json()["choices"][0]["message"]["content"].strip()
-                    st.markdown("### ✨ Suggested Design Workflows")
-                    st.write(suggestion)
-                else:
-                    st.error(f"API call failed: {response.status_code} - {response.text}")
+                response = openai.ChatCompletion.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": problem}
+                    ],
+                    temperature=0.6,
+                    max_tokens=700
+                )
+                suggestion = response.choices[0].message.content.strip()
+                st.markdown("### ✨ Suggested Design Workflows")
+                st.write(suggestion)
             except Exception as e:
-                st.error(f"Unexpected error: {e}")
+                st.error(f"OpenAI API call failed: {e}")
